@@ -17,6 +17,25 @@
         | (E)
         | number
 
+correct gramatic:
+            S ::= E;
+            E ::= T A
+            A ::= + T A
+                | - T A
+                | ε
+            T ::= F B
+            B ::= * F B
+                | / F B
+                | % F B
+                | ε
+            F ::= P C
+            C ::= ^ F
+                | ε
+            P ::= (E)
+                | - P
+                | number
+
+
     **** Cosas Importantes ****:
 
     1. Lo que está en minúscula son terminales
@@ -82,14 +101,32 @@ import java.io.IOException;
 %function nextToken
 %type Token
 
+
 SEMI = ";" // Definan aqui sus Tokens/ER por ejemplo: "el token SEMI"
 WHITE = (" "|\t|\n)
-
+PLUS = "+"
+MINUS = "-"
+MULT = "*"
+DIV = "/"
+MOD = "%"
+EXP = "^"
+LPAREN = "("
+RPAREN = ")"
+digito = [0-9]
+numero = {digito}+(\\.{digito}+)?([eE][-+]?{digito}+)?
 %%
 
-<YYINITIAL>{SEMI}   { return new Token(Token.SEMI);   }
-
-<YYINITIAL>{WHITE}  { /* NO HACER NADA */             }
+<YYINITIAL>{SEMI}       { return new Token(Token.SEMI);   }
+<YYINITIAL>{PLUS}       { return new Token(Token.PLUS); }
+<YYINITIAL>{MINUS}      { return new Token(Token.MINUS); }
+<YYINITIAL>{MULT}       { return new Token(Token.MULT); }
+<YYINITIAL>{DIV}        { return new Token(Token.DIV); }
+<YYINITIAL>{MOD}      { return new Token(Token.MOD); }
+<YYINITIAL>{POW}      { return new Token(Token.EXP); }
+<YYINITIAL>{LPAREN}     { return new Token(Token.LPAREN); }
+<YYINITIAL>{RPAREN}     { return new Token(Token.RPAREN); }
+<YYINITIAL>{WHITE}      { /* NO HACER NADA */             }
+<YYINITIAL>{numero}         { return new Token(Token.NUMBER, yytext()); }
 
 <YYINITIAL>.        { return new Token(Token.ERROR);
                       /* todo lo demas es ERROR */ }
