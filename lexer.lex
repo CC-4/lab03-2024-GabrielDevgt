@@ -113,7 +113,7 @@ EXP = "^"
 LPAREN = "("
 RPAREN = ")"
 digito = [0-9]
-numero = {digito}+(\\.{digito}+)?([eE][-+]?{digito}+)?
+numero = {digito}+\.?{digito}*([eE][-+]?{digito}+)?|\.{digito}+([eE][-+]?{digito}+)?
 %%
 
 <YYINITIAL>{SEMI}       { return new Token(Token.SEMI);   }
@@ -122,7 +122,7 @@ numero = {digito}+(\\.{digito}+)?([eE][-+]?{digito}+)?
 <YYINITIAL>{MULT}       { return new Token(Token.MULT); }
 <YYINITIAL>{DIV}        { return new Token(Token.DIV); }
 <YYINITIAL>{MOD}      { return new Token(Token.MOD); }
-<YYINITIAL>{POW}      { return new Token(Token.EXP); }
+<YYINITIAL>{EXP}      { return new Token(Token.EXP); }
 <YYINITIAL>{LPAREN}     { return new Token(Token.LPAREN); }
 <YYINITIAL>{RPAREN}     { return new Token(Token.RPAREN); }
 <YYINITIAL>{WHITE}      { /* NO HACER NADA */             }
