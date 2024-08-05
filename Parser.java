@@ -33,7 +33,11 @@ public class Parser {
 
         // Shunting Yard Algorithm
         // Imprime el resultado de operar el input
-        // System.out.println("Resultado: " + this.operandos.peek());
+        System.out.println("Resultado: " + this.operandos.peek());
+
+        while (!operadores.empty()) {
+            popOp();
+        }
 
         // Verifica si terminamos de consumir el input
         if(this.next != this.tokens.size()) {
@@ -45,34 +49,63 @@ public class Parser {
     // Verifica que el id sea igual que el id del token al que apunta next
     // Si si avanza el puntero es decir lo consume.
     private boolean term(int id) {
-        if(this.next < this.tokens.size() && this.tokens.get(this.next).equals(id)) {
-            
-            // Codigo para el Shunting Yard Algorithm
-            /*
-            if (id == Token.NUMBER) {
-				// Encontramos un numero
-				// Debemos guardarlo en el stack de operandos
-				operandos.push( this.tokens.get(this.next).getVal() );
+        if (this.next < this.tokens.size() && this.tokens.get(this.next).equals(id)) {
 
-			} else if (id == Token.SEMI) {
-				// Encontramos un punto y coma
-				// Debemos operar todo lo que quedo pendiente
-				while (!this.operadores.empty()) {
-					popOp();
-				}
-				
-			} else {
-				// Encontramos algun otro token, es decir un operador
-				// Lo guardamos en el stack de operadores
-				// Que pushOp haga el trabajo, no quiero hacerlo yo aqui
-				pushOp( this.tokens.get(this.next) );
-			}
-			*/
+            Token curentToken = this.tokens.get(this.next);
+
+            // Codigo para el Shunting Yard Algorithm
+
+            if (id == Token.NUMBER) {
+                // Encontramos un numero
+                // Debemos guardarlo en el stack de operandos
+                operandos.push(this.tokens.get(this.next).getVal());
+
+            } else if (id == Token.SEMI) {
+                // Encontramos un punto y coma
+                // Debemos operar todo lo que quedo pendiente
+                while (!this.operadores.empty()) {
+                    popOp();
+                }
+            } else if (isOperator(curentToken)) {
+                // Encontramos algun otro token, es decir un operador
+                // Lo guardamos en el stack de operadores
+                // Que pushOp haga el trabajo, no quiero hacerlo yo aqui
+                pushOp(curentToken);
+            } else if (id == Token.LPAREN) {
+                operadores.push(curentToken);
+            } else if (id == Token.RPAREN) {
+                while (!operadores.empty() && operadores.peek().getId() != Token.LPAREN) {
+                    popOp();
+                }
+
+                if (!operadores.empty() && operadores.peek().getId() == Token.LPAREN) {
+                    operadores.pop();
+                } else {
+                    throw new IllegalArgumentException("Missing parenthesis");
+                }
+            }
 
             this.next++;
+
             return true;
         }
+
+        // Next line for debuggin
+        // System.out
+        // .println(
+        // "Token unsuccesful, Expecte ID: " + id + ", Found ID: " +
+        // this.tokens.get(this.next).getId());
+
         return false;
+    }
+
+    private boolean isOperator(Token token) {
+        return token.getId() == Token.PLUS
+                || token.getId() == Token.MINUS
+                || token.getId() == Token.MULT
+                || token.getId() == Token.DIV
+                || token.getId() == Token.MOD
+                || token.getId() == Token.EXP;
     }
 
     // Funcion que verifica la precedencia de un operador
@@ -81,13 +114,18 @@ public class Parser {
 
         /* El codigo de esta seccion se explicara en clase */
 
-        switch(op.getId()) {
-        	case Token.PLUS:
-        		return 1;
-        	case Token.MULT:
-        		return 2;
-        	default:
-        		return -1;
+        switch (op.getId()) {
+            case Token.PLUS:
+            case Token.MINUS:
+                return 1;
+            case Token.MULT:
+            case Token.DIV:
+            case Token.MOD:
+                return 2;
+            case Token.EXP:
+                return 3;
+            default:
+                return -1;
         }
     }
 
@@ -96,20 +134,35 @@ public class Parser {
 
         /* TODO: Su codigo aqui */
 
+        // Pop b first to preserver entry order
+        double b = this.operandos.pop();
+        double a = this.operandos.pop();
+
         /* El codigo de esta seccion se explicara en clase */
 
-        if (op.equals(Token.PLUS)) {
-        	double a = this.operandos.pop();
-        	double b = this.operandos.pop();
-        	// print para debug, quitarlo al terminar
-        	System.out.println("suma " + a + " + " + b);
-        	this.operandos.push(a + b);
-        } else if (op.equals(Token.MULT)) {
-        	double a = this.operandos.pop();
-        	double b = this.operandos.pop();
-        	// print para debug, quitarlo al terminar
-        	System.out.println("mult " + a + " * " + b);
-        	this.operandos.push(a * b);
+        System.out.println(op.getId() + ": " + a + op + b);
+
+        switch (op.getId()) {
+            case Token.PLUS:
+                operandos.push(a + b);
+                break;
+            case Token.MINUS:
+                operandos.push(a - b);
+                break;
+            case Token.MULT:
+                operandos.push(a * b);
+                break;
+            case Token.DIV:
+                operandos.push(a / b);
+                break;
+            case Token.MOD:
+                operandos.push(a % b);
+                break;
+            case Token.EXP:
+                operandos.push(Math.pow(a, b));
+                break;
+            default:
+                throw new IllegalArgumentException("Uknonw operator: " + op);
         }
     }
 
@@ -126,6 +179,13 @@ public class Parser {
         	// Comparamos las precedencias y decidimos si hay que operar
         	// Es posible que necesitemos un ciclo aqui, una vez tengamos varios niveles de precedencia
         	// Al terminar operaciones pendientes, guardamos op en stack
+
+            while (!operadores.empty() && pre(operadores.peek()) >= pre(op)) {
+                popOp();
+            }
+    
+            // Si no hay operandos automaticamente ingresamos op al stack
+            operadores.push(op);
 
     }
 
